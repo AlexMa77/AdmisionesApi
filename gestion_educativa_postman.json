@@ -1,0 +1,515 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Gestión Educativa API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "facultadId", "value": "" },
+    { "key": "carreraId", "value": "" },
+    { "key": "docenteId", "value": "" },
+    { "key": "estudianteId", "value": "" },
+    { "key": "materiaId", "value": "" },
+    { "key": "matriculaId", "value": "" },
+    { "key": "notaId", "value": "" },
+    { "key": "asistenciaId", "value": "" },
+    { "key": "actividadId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register - POST /api/auth/register/",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register/", "host": ["{{baseUrl}}"], "path": ["api","auth","register",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@gestion.edu\",\n  \"first_name\": \"Admin\",\n  \"last_name\": \"Sistema\",\n  \"password\": \"admin123\"\n}" }
+          }
+        },
+        {
+          "name": "Login - POST /api/auth/login/ (guarda tokens)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "let d = {};",
+                "try { d = pm.response.json(); } catch(e) {}",
+                "if (d.access) { pm.collectionVariables.set('accessToken', d.access); pm.environment.set('accessToken', d.access); }",
+                "if (d.refresh) { pm.collectionVariables.set('refreshToken', d.refresh); pm.environment.set('refreshToken', d.refresh); }",
+                "pm.test('Login exitoso', () => pm.expect(d.access).to.be.a('string'));"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login/", "host": ["{{baseUrl}}"], "path": ["api","auth","login",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh - POST /api/auth/refresh/",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "let d = {};",
+                "try { d = pm.response.json(); } catch(e) {}",
+                "if (d.access) pm.collectionVariables.set('accessToken', d.access);",
+                "pm.test('Token refrescado', () => pm.expect(d.access).to.be.a('string'));"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh/", "host": ["{{baseUrl}}"], "path": ["api","auth","refresh",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Logout - POST /api/auth/logout/",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout/", "host": ["{{baseUrl}}"], "path": ["api","auth","logout",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Facultades",
+      "item": [
+        {
+          "name": "List Facultades (público) - GET",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/facultades/", "host": ["{{baseUrl}}"], "path": ["api","facultades",""] }
+          }
+        },
+        {
+          "name": "Create Facultad (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('facultadId', String(d.id));", "pm.test('Facultad creada', () => pm.response.to.have.status(201));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/facultades/", "host": ["{{baseUrl}}"], "path": ["api","facultades",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Facultad de Ingeniería\",\n  \"codigo\": \"FING\",\n  \"descripcion\": \"Facultad de Ingeniería y Tecnología\",\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Facultad by ID - GET",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/facultades/{{facultadId}}/", "host": ["{{baseUrl}}"], "path": ["api","facultades","{{facultadId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Facultad (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/facultades/{{facultadId}}/", "host": ["{{baseUrl}}"], "path": ["api","facultades","{{facultadId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Facultad actualizada\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Facultad (admin) - DELETE",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/facultades/{{facultadId}}/", "host": ["{{baseUrl}}"], "path": ["api","facultades","{{facultadId}}",""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Carreras",
+      "item": [
+        {
+          "name": "List Carreras - GET",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/carreras/", "host": ["{{baseUrl}}"], "path": ["api","carreras",""] }
+          }
+        },
+        {
+          "name": "Create Carrera (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('carreraId', String(d.id));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/carreras/", "host": ["{{baseUrl}}"], "path": ["api","carreras",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"facultad\": {{facultadId}},\n  \"nombre\": \"Ingeniería en Sistemas\",\n  \"codigo\": \"ISW\",\n  \"duracion_semestres\": 8,\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Carrera by ID - GET",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/carreras/{{carreraId}}/", "host": ["{{baseUrl}}"], "path": ["api","carreras","{{carreraId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Carrera (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/carreras/{{carreraId}}/", "host": ["{{baseUrl}}"], "path": ["api","carreras","{{carreraId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"duracion_semestres\": 9\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Docentes",
+      "item": [
+        {
+          "name": "List Docentes (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/docentes/", "host": ["{{baseUrl}}"], "path": ["api","docentes",""] }
+          }
+        },
+        {
+          "name": "Create Docente (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('docenteId', String(d.id));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/docentes/", "host": ["{{baseUrl}}"], "path": ["api","docentes",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"user\": 1,\n  \"cedula\": \"1720000001\",\n  \"telefono\": \"0991234567\",\n  \"especialidad\": \"Programación y Bases de Datos\",\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Docente by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/docentes/{{docenteId}}/", "host": ["{{baseUrl}}"], "path": ["api","docentes","{{docenteId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Docente (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/docentes/{{docenteId}}/", "host": ["{{baseUrl}}"], "path": ["api","docentes","{{docenteId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"especialidad\": \"Redes y Seguridad\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Estudiantes",
+      "item": [
+        {
+          "name": "List Estudiantes (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/estudiantes/", "host": ["{{baseUrl}}"], "path": ["api","estudiantes",""] }
+          }
+        },
+        {
+          "name": "Create Estudiante (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('estudianteId', String(d.id));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/estudiantes/", "host": ["{{baseUrl}}"], "path": ["api","estudiantes",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"user\": 1,\n  \"carrera\": {{carreraId}},\n  \"cedula\": \"0920000001\",\n  \"telefono\": \"0987654321\",\n  \"semestre_actual\": 3,\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Estudiante by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/estudiantes/{{estudianteId}}/", "host": ["{{baseUrl}}"], "path": ["api","estudiantes","{{estudianteId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Estudiante (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/estudiantes/{{estudianteId}}/", "host": ["{{baseUrl}}"], "path": ["api","estudiantes","{{estudianteId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"semestre_actual\": 4\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Materias",
+      "item": [
+        {
+          "name": "List Materias (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/materias/", "host": ["{{baseUrl}}"], "path": ["api","materias",""] }
+          }
+        },
+        {
+          "name": "Create Materia (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('materiaId', String(d.id));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/materias/", "host": ["{{baseUrl}}"], "path": ["api","materias",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"carrera\": {{carreraId}},\n  \"docente\": {{docenteId}},\n  \"nombre\": \"Programación Web\",\n  \"codigo\": \"PRW-301\",\n  \"creditos\": 4,\n  \"semestre\": 3,\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Materia by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/materias/{{materiaId}}/", "host": ["{{baseUrl}}"], "path": ["api","materias","{{materiaId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Materia (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/materias/{{materiaId}}/", "host": ["{{baseUrl}}"], "path": ["api","materias","{{materiaId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"creditos\": 3\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Matrículas",
+      "item": [
+        {
+          "name": "List Matrículas (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/matriculas/", "host": ["{{baseUrl}}"], "path": ["api","matriculas",""] }
+          }
+        },
+        {
+          "name": "Create Matrícula (admin) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('matriculaId', String(d.id));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/matriculas/", "host": ["{{baseUrl}}"], "path": ["api","matriculas",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"estudiante\": {{estudianteId}},\n  \"materia\": {{materiaId}},\n  \"periodo\": \"2026-1\",\n  \"estado\": \"activa\"\n}" }
+          }
+        },
+        {
+          "name": "Get Matrícula by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/matriculas/{{matriculaId}}/", "host": ["{{baseUrl}}"], "path": ["api","matriculas","{{matriculaId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Matrícula (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/matriculas/{{matriculaId}}/", "host": ["{{baseUrl}}"], "path": ["api","matriculas","{{matriculaId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"finalizada\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Postgres - Notas",
+      "item": [
+        {
+          "name": "List Notas (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notas/", "host": ["{{baseUrl}}"], "path": ["api","notas",""] }
+          }
+        },
+        {
+          "name": "Create Nota (admin) - POST (calcula nota_final)",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('notaId', String(d.id));", "pm.test('nota_final calculada', () => pm.expect(d.nota_final).to.not.be.null);"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notas/", "host": ["{{baseUrl}}"], "path": ["api","notas",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"matricula\": {{matriculaId}},\n  \"parcial1\": 8.50,\n  \"parcial2\": 7.00,\n  \"examen_final\": 9.00\n}" }
+          }
+        },
+        {
+          "name": "Get Nota by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notas/{{notaId}}/", "host": ["{{baseUrl}}"], "path": ["api","notas","{{notaId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Nota (admin) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/notas/{{notaId}}/", "host": ["{{baseUrl}}"], "path": ["api","notas","{{notaId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"parcial2\": 8.00\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mongo - Asistencias",
+      "item": [
+        {
+          "name": "List Asistencias (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/", "host": ["{{baseUrl}}"], "path": ["api","asistencias",""] }
+          }
+        },
+        {
+          "name": "Create Asistencia (auth) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('asistenciaId', d.id);", "pm.test('Asistencia creada', () => pm.expect(d.id).to.be.a('string'));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/", "host": ["{{baseUrl}}"], "path": ["api","asistencias",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"matricula_id\": 1,\n  \"materia_id\": 1,\n  \"estudiante_id\": 1,\n  \"fecha\": \"2026-05-27\",\n  \"presente\": true,\n  \"observacion\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Get Asistencia by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/{{asistenciaId}}/", "host": ["{{baseUrl}}"], "path": ["api","asistencias","{{asistenciaId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Asistencia (auth) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/{{asistenciaId}}/", "host": ["{{baseUrl}}"], "path": ["api","asistencias","{{asistenciaId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"presente\": false,\n  \"observacion\": \"Falta justificada\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Asistencia (auth) - DELETE",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/{{asistenciaId}}/", "host": ["{{baseUrl}}"], "path": ["api","asistencias","{{asistenciaId}}",""] }
+          }
+        },
+        {
+          "name": "Filtrar por materia - GET ?materia_id=1",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/asistencias/?materia_id=1", "host": ["{{baseUrl}}"], "path": ["api","asistencias",""], "query": [{ "key": "materia_id", "value": "1" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mongo - Actividades",
+      "item": [
+        {
+          "name": "List Actividades (auth) - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/", "host": ["{{baseUrl}}"], "path": ["api","actividades",""] }
+          }
+        },
+        {
+          "name": "Create Actividad (auth) - POST",
+          "event": [{
+            "listen": "test",
+            "script": { "type": "text/javascript", "exec": ["let d = {}; try { d = pm.response.json(); } catch(e) {}", "if (d.id) pm.collectionVariables.set('actividadId', d.id);", "pm.test('Actividad creada', () => pm.expect(d.id).to.be.a('string'));"] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/", "host": ["{{baseUrl}}"], "path": ["api","actividades",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"materia_id\": 1,\n  \"titulo\": \"Tarea 1 - Introducción a Django\",\n  \"descripcion\": \"Crear un proyecto Django REST con modelos y serializers\",\n  \"tipo\": \"tarea\",\n  \"fecha_limite\": \"2026-06-10\",\n  \"creado_por\": 1,\n  \"activo\": true\n}" }
+          }
+        },
+        {
+          "name": "Get Actividad by ID - GET",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/{{actividadId}}/", "host": ["{{baseUrl}}"], "path": ["api","actividades","{{actividadId}}",""] }
+          }
+        },
+        {
+          "name": "Patch Actividad (auth) - PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/{{actividadId}}/", "host": ["{{baseUrl}}"], "path": ["api","actividades","{{actividadId}}",""] },
+            "body": { "mode": "raw", "raw": "{\n  \"activo\": false\n}" }
+          }
+        },
+        {
+          "name": "Delete Actividad (auth) - DELETE",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/{{actividadId}}/", "host": ["{{baseUrl}}"], "path": ["api","actividades","{{actividadId}}",""] }
+          }
+        },
+        {
+          "name": "Filtrar por tipo - GET ?tipo=tarea",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/actividades/?tipo=tarea", "host": ["{{baseUrl}}"], "path": ["api","actividades",""], "query": [{ "key": "tipo", "value": "tarea" }] }
+          }
+        }
+      ]
+    }
+  ]
+}

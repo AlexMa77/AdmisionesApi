@@ -1,0 +1,22 @@
+[Unit]
+Description=Gunicorn daemon for Admision Instituto Educativo
+After=network.target postgresql.service
+
+[Service]
+User=shopapi
+Group=www-data
+WorkingDirectory=/opt/admision-instituto-educativo
+Environment="PATH=/opt/admision-instituto-educativo/.venv/bin"
+EnvironmentFile=/opt/admision-instituto-educativo/.env
+ExecStart=/opt/admision-instituto-educativo/.venv/bin/gunicorn \
+          --workers 3 \
+          --bind unix:/run/gunicorn-admision-instituto-educativo.sock \
+          --access-logfile /var/log/gunicorn-admision-instituto-educativo-access.log \
+          --error-logfile /var/log/gunicorn-admision-instituto-educativo-error.log \
+          config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
