@@ -58,11 +58,12 @@ jobs:
           DB_PASSWORD:   admisiones_pass_123
           DB_HOST:       localhost
           DB_PORT:       5432
-          TEST_DB_NAME:  admisiones_test_db
+          TEST_DB_NAME:  gestion_educativa_test_db
           MONGO_URI:     mongodb://localhost:27017
           MONGO_DB:      gestion_educativa_test_db
           CORS_ALLOW_ALL_ORIGINS: True
-        run: uv run python manage.py test gestion --verbosity=2
+        run: uv run python manage.py test gestion --verbosity=2 --noinput
+
 
   # ── Job 2: Deploy ─────────────────────────────────────────
   deploy:
