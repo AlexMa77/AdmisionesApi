@@ -93,7 +93,8 @@ jobs:
             set -e
 
             echo "── 1. Actualizando código ──"
-            cd "${{ secrets.DEPLOY_PATH }}"
+            DEPLOY_DIR=$(echo "${{ secrets.DEPLOY_PATH }}" | tr -d '\r\n' | xargs)
+            cd "$DEPLOY_DIR"
             git fetch origin
             git reset --hard origin/main
 
