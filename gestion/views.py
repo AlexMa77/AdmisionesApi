@@ -123,6 +123,14 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserBasicSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ["username", "first_name", "last_name", "email"]
+
+    def get_queryset(self):
+        return get_user_model().objects.exclude(
+            estudiante__isnull=False
+        ).exclude(
+            docente__isnull=False
+        ).order_by("username")
 
