@@ -114,3 +114,15 @@ class NotaViewSet(viewsets.ModelViewSet):
         if self.action in ["list", "retrieve"]:
             return [IsAuthenticated()]
         return super().get_permissions()
+
+
+from django.contrib.auth import get_user_model
+from .serializers import UserBasicSerializer
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserBasicSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["username", "first_name", "last_name", "email"]
+

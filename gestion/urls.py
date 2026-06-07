@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     FacultadViewSet, CarreraViewSet, DocenteViewSet,
     EstudianteViewSet, MateriaViewSet, MatriculaViewSet, NotaViewSet,
+    UserViewSet,
 )
 from .asistencia_views import asistencias_list_create, asistencias_detail
 from .actividades_views import actividades_list_create, actividades_detail
@@ -16,6 +17,7 @@ router.register(r"estudiantes", EstudianteViewSet, basename="estudiante")
 router.register(r"materias", MateriaViewSet, basename="materia")
 router.register(r"matriculas", MatriculaViewSet, basename="matricula")
 router.register(r"notas", NotaViewSet, basename="nota")
+router.register(r"users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("health/", health_check),
